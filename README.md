@@ -12,7 +12,7 @@ Once Ubuntu is up and running, a real-time kernel must be installed.
 ## Install the Real-Time Kernel
 1. Boot the system in the deafult Linux Kernel.
 2. Download patch-5.15.170-rt81.patch.xz  from [here](https://cdn.kernel.org/pub/linux/kernel/projects/rt/5.15/).
-3. Open a terminal in the same directory as the downloaded file (Go to the folder with the downloaded kernel (for istance Download folder), right click on the window and select open in terminal otherwise manually use ```cd``` command in a generic terminal). 
+3. Open a terminal in the same directory as the downloaded file (Go to the folder with the downloaded kernel (for istance Download folder), right click on the window and select "open in terminal" otherwise reach the same path with ```cd``` command in a generic terminal). 
 4. Execute the following lines of code in this terminal
    ```
    tar xf linux-5.15.170.tar.xz
@@ -54,27 +54,28 @@ Once Ubuntu is up and running, a real-time kernel must be installed.
    ```
     sudo gedit /etc/initramfs-tools/initramfs.conf
    ```
+8. Then you can finish your installation with:
+   ```
+   sudo update-initramfs -u
+   sudo update-grub
+   ```
+9. You can close the terminal and boot in the newly installed real-time Linux kernel.
 
-
-
-
-Then you can finish your installation with:
-
-sudo update-initramfs -u
-sudo update-grub
-
-ERROR NO WIFI MODULE WITH KERNEL 5.15.170:
-lanciare il comando: 
+## ERROR NO WIFI MODULE AVAILABLE WITH KERNEL 5.15.170:
+With the installation of the 5.15.170 real-time kernel on UBUntu 24.04 on a old PC a problem emerged as the wifi module was not available despite there were no problem in the wifi connection from other kernels on the same device. In case this problem shows up after booting in this newly installed kernel follow those steps to solve it. 
+Open a terminal and execute: 
+```
 sudo dmesg | grep iwl
-dovrebbero comparire dei messggi di errore che indicano le versioni firmware che il sistema ha provato a caricare. Verificare che in /lib/firmware effettivamente non ci siano i file indicati. 
-Guardare i firmware version che il sistema cerca di caricare (nel mio caso era 7625D-29.ucode) dopo di che andare su https://wireless.docs.kernel.org/en/latest/en/users/drivers/iwlwifi/core_release.html#core-release poi nella sezione "core release" cliccare sulla versione che serve e verrà scaricata. Poi andare in Download, tasto destro, open in terminal:  
+```
+This sholud provide error messages indicating firmware versions the system tried to load. Verify that in the directory /lib/firmware those files are actually absent. Go back to the terminal and memorize what firmware version the system is trying to load (in my case was the 7625D-29.ucode) then go to [this](https://wireless.docs.kernel.org/en/latest/en/users/drivers/iwlwifi/core_release.html#core-release) site and fin the section "Core Releases", click on the missing firmware to start the download (obviously you will need a cabled internet connection, another PC or a different kernel to navigate the internet and donwload the file). 
+Go to the folder with the downloaded file, right click on the window and select "open in terminal": 
+```
 sudo cp iwlwifi-7265D-29.ucode /lib/firmware
-poi fare il reboot del sistema e ora dovrebbe funzioare
+```
+Reboot the system and now there shold be no problem with the wifi module in the kernel 5.15.170.
 
-(nel caso fosse utile con questo comando è possibile controllare il network contrller :
-lspci -nn | grep Network)
+(In case of necessity this command can be used to check the network controller:```lspci -nn | grep Network ```)
 
-https://wireless.wiki.kernel.org/en/use … rs/iwlwifi 
  
 INSTALL ETHERCAT MASTER v1.6
 la base è questa guida ma ci sono alcune modifiche
