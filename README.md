@@ -61,7 +61,7 @@ Once Ubuntu is up and running, a real-time kernel must be installed.
    ```
 9. You can close the terminal and boot in the newly installed real-time Linux kernel.
 
-## ERROR NO WIFI MODULE AVAILABLE WITH KERNEL 5.15.170:
+### ERROR NO WIFI MODULE AVAILABLE WITH KERNEL 5.15.170:
 With the installation of the 5.15.170 real-time kernel on UBUntu 24.04 on a old PC a problem emerged as the wifi module was not available despite there were no problem in the wifi connection from other kernels on the same device. In case this problem shows up after booting in this newly installed kernel follow those steps to solve it. 
 Open a terminal and execute: 
 ```
@@ -77,60 +77,97 @@ Reboot the system and now there shold be no problem with the wifi module in the 
 (In case of necessity this command can be used to check the network controller:```lspci -nn | grep Network ```)
 
  
-INSTALL ETHERCAT MASTER v1.6
-la base è questa guida ma ci sono alcune modifiche
-https://icube-robotics.github.io/ethercat_driver_ros2/quickstart/installation.html
-Andare creare una cartella in download o da qualche parte (esempio io ho creato una cartella "app" in "home" e metto tutto li quando devo scaricare delle app from source) 
-fare tasto destro, open in terminal :
+## Install IgH EtherCAT Master v1.6 by Etherlab
+The basis of this installation guide can be found [here](https://icube-robotics.github.io/ethercat_driver_ros2/quickstart/installation.html) but some changes have been made. 
+To install IgH EtherCAT Master follow those instructions: 
+1. Boot in the real-time kernel where EtherCAT master will be used. Be careful the Ethercat Master will be available only in the kernel in which it is installed. (Moreover if EtherCAT master is installed on kernel 1 and need to be used on kernel 2, the installation on kernel 2 might broke the istallation on kernel 1)
+2. Open a terminal and follow the instructions. Depending on your target system, you'll need to change the step 6 of thi guide. As a rule of thumb, if you are using a desktop PC with an Intel processor, you should have an Intel network card available, whereas if you are using a modern laptop, Realtek network cards are more common. Anyway, open a terminal to find out
+   ```
+   sudo lshw -class network
+   ```
+   and, under the group described as ```Ethernet interface```, see if your network interface is using e1000e or r8169 driver, note that down and then note down the serial number as well. Serial number and network driver will be required later. Close the terminal.
+3. Create a directory (example in "Download" or in "Home" (I created a "App" directory in "Home" in which i could gather all app installations)).
+4. Inside this directory right click on the window and select "open in terminal". Here execute:
+   ```
+   sudo apt-get update
+   sudo apt-get upgrade
+   sudo apt-get install git autoconf libtool pkg-config make build-essential net-tools
+   git clone https://gitlab.com/etherlab.org/ethercat.git
+   ```
+5. In the same terminal exeute the following commands in order to select the EtherCAT Master verison (the default one should already be the 1.6). The ```sudo rm``` commands are introduced to remove potential file from previous installations of EtherCAT Master. 
+   ```
+   cd ethercat
+   git checkout stable-1.6
+   sudo rm /usr/bin/ethercat
+   sudo rm /etc/init.d/ethercat
+   ```
+6. Create a configuration scricpt: 
+   ```
+   ./bootstrap  # to create the configure script
+   ```
+   Depending on your network driver execute one of the following two commands.
+   For e1000e drivers:
+   ```
+   ./configure --disable-8139too --enable-generic --enable-e1000e --disable-eoe --prefix=/opt/etherlab
+   ```
+   while for r8169 drivers:
+   ```
+   ./configure --disable-8139too --enable-generic --enable-r8169  --disable-eoe --prefix=/opt/etherlab
+   ```
+7. Proceed with the installation:
+   ```
+   make all modules
+   sudo make modules_install install
+   sudo depmod
+   ```
+8. Complete the installation with: 
+   ```
+   sudo ln -s /opt/etherlab/bin/ethercat /usr/bin/
+   sudo ln -s /opt/etherlab/etc/init.d/ethercat /etc/init.d/ethercat
+   sudo mkdir -p /etc/sysconfig
+   sudo cp /opt/etherlab/etc/sysconfig/ethercat /etc/sysconfig/ethercat
+   ```
+   Create a new ```udev``` rule with the following command and paste ```KERNEL=="EtherCAT[0-9]*", MODE="0666"``` inside teh window. Save and close the file.
+   ```
+   sudo gedit /etc/udev/rules.d/99-EtherCAT.rules
+   ```
+   Execute the following command to edit the config file.  
+   ```
+   sudo gedit /etc/sysconfig/ethercat
+   ```
+   Edit ```MASTER0_DEVICE="ff:ff:ff:ff:ff:ff"``` with your previuosly noted serial number and ```DEVICE_MODULES="r8169"``` or ```DEVICE_MODULES="e1000e"```
+   according to your network driver. Save and close the file.
+10. Close the terminal and open a new terminal to test the Ethercat Master. Run the following command to use the terminal as superuser:
+    ```
+    sudo -s
+    ```
+    Insert your password, execute:
+    ```
+    /etc/init.d/ethercat start
+    ```
+    The output should be:
+    ```
+    Starting EtherCAT master 1.6.2  done
+    ```
+    If you have EtherCAT Slaves connected to the PC you can run in teh same termial (after ```/etc/init.d/ethercat start```) the command ```ethercat slaves``` and as result a list of slaves should appear.
+    To stop the EtehrCAT Master run in the same terminal:
+    ```
+    /etc/init.d/ethercat stop
+    ```
+### Error prevention 
+To prevent the impossility for ROS2 to locate EtherCAT Master Libraries check if the files inside the different direcories in /opt/etherlab have been copied to the respective directory in /usr/local. If that is not the case navigate the file system to /usr/local and there right click on window of the file manager and select "open in terminal":
+```
+sudo ln -s /opt/etherlab/bin/ethercat bin/
+sudo cp -r /opt/etherlab/etc/* etc/
+sudo cp -r /opt/etherlab/share/* share/
+sudo cp -r /opt/etherlab/sbin/* sbin/
+sudo cp -r /opt/etherlab/lib/* lib/
+sudo cp -r /opt/etherlab/include/* include/
+sudo ldconfig
+```
+NOTE: The last command prevents an error enountered trying to launch a correctly built ROS2 node containing EtherCAT Master libraries dependencies. The error was  "error while loading shared libraries: libethercat.so.1: cannot open shared object file: No such file or directory" and was solved after the running ```sudo ldconfig```.
 
-sudo apt-get update
-sudo apt-get upgrade
-sudo apt-get install git autoconf libtool pkg-config make build-essential net-tools
-git clone https://gitlab.com/etherlab.org/ethercat.git
 
-cd ethercat
-
-git checkout stable-1.6
-
-sudo rm /usr/bin/ethercat
-
-sudo rm /etc/init.d/ethercat
-
-./bootstrap  # to create the configure script
-
-./configure --disable-8139too --enable-generic --enable-r8169 --disable-eoe --prefix=/opt/etherlab
-
-make all modules
-
-sudo make modules_install install
-
-sudo depmod
-
-sudo ln -s /opt/etherlab/bin/ethercat /usr/bin/
-
-sudo ln -s /opt/etherlab/etc/init.d/ethercat /etc/init.d/ethercat
-
-sudo mkdir -p /etc/sysconfig
-
-sudo cp /opt/etherlab/etc/sysconfig/ethercat /etc/sysconfig/ethercat
-
-sudo gedit /etc/udev/rules.d/99-EtherCAT.rules
-
-sudo gedit /etc/sysconfig/ethercat
-In the configuration file specify the mac address of the network card to be used and its driver
-(in un altro terminale lanciare lshw -class network )
-MASTER0_DEVICE="ff:ff:ff:ff:ff:ff"  # mac address
-DEVICE_MODULES="generic"
-
-
-poi salvare e chiudere e lanciare 
-sudo /etc/init.d/ethercat start
-dovrebbe visualizzare: 
-Starting EtherCAT master 1.6.2  done
-Dopo di che se sono collegati degli slave questi possono essere visulaizzati con: 
-ethercat slaves
-Per interrompere il master 
-sudo /etc/init.d/ethercat stop
 
 
 Install Armadillo (last stable 14.2.1)
@@ -143,20 +180,3 @@ sudo apt install cmake libarpack2-dev libsuperlu-dev
 https://arma.sourceforge.net/download.html
 
 
-open a terminal in /usr/local:
-sudo ln -s /opt/etherlab/bin/ethercat bin/
-sudo cp -r /opt/etherlab/etc/* etc/
-sudo cp -r /opt/etherlab/share/* share/
-sudo cp -r /opt/etherlab/sbin/* sbin/
-sudo cp -r /opt/etherlab/lib/* lib/
-sudo cp -r /opt/etherlab/include/* include/
-
-ERRORE (error while loading shared libraries: libethercat.so.1: cannot open shared object file: No such file or directory) runnando ros2 run cdpr_alars_2_0 main 
-risolto con il comando "$ sudo ldconfig"
-
-
-
-
-``` 
-sudo apt install
-```
