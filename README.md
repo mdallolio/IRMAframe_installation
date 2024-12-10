@@ -11,7 +11,7 @@ Once Ubuntu is up and running, a real-time kernel must be installed.
 
 ## Install the Real-Time Kernel
 1. Boot the system to the default Linux kernel.
-2. Download linux-5.15.170.tar.xz from [here] (https://www.kernel.org/pub/linux/kernel/v5.x/).
+2. Download linux-5.15.170.tar.xz from [here](https://www.kernel.org/pub/linux/kernel/v5.x/).
 3. Download patch-5.15.170-rt81.patch.xz from [here](https://cdn.kernel.org/pub/linux/kernel/projects/rt/5.15/older/).
 4. Open a terminal in the same directory as the downloaded files (go to the folder with the downloaded kernel (e.g. Download folder), right click on the window and select "open in terminal", otherwise go to the same path with the ``cd``` command in a generic terminal). 
 5. Execute the following lines of code in this terminal
@@ -150,13 +150,13 @@ Follow these instructions to install the IgH EtherCAT Master:
     ```
     Starting EtherCAT master 1.6.2  done
     ```
-    If you have EtherCAT slaves connected to the PC, you can run the command ``ethercat slaves`` in the same terminal (after ```/etc/init.d/ethercat start``) and a list of slaves should appear.
+    If you have EtherCAT slaves connected to the PC, you can run the command ``ethercat slaves`` in the same terminal (after ``/etc/init.d/ethercat start``) and a list of slaves should appear.
     To stop the EtehrCAT Master run in the same terminal:
     ```
     /etc/init.d/ethercat stop
     ```
 ### Error prevention 
-To prevent ROS2 from not being able to find the EtherCAT Master Libraries, check if the files in the different directories in /opt/etherlab have been copied to the corresponding directory in /usr/local. If not, navigate the file system to /usr/local and right click on the file manager window and select "open in terminal":
+To prevent ROS2 from not being able to find the EtherCAT Master Libraries, check if the files in the different directories in ``/opt/etherlab`` have been copied to the corresponding directory in ``/usr/local``. If not, navigate the file system to ``/usr/local`` and right click on the file manager window and select "open in terminal":
 ```
 sudo ln -s /opt/etherlab/bin/ethercat bin/
 sudo cp -r /opt/etherlab/etc/* etc/
@@ -169,10 +169,11 @@ sudo ldconfig
 NOTE: The very last command prevents an error that was encountered when trying to run a correctly built ROS2 node with EtherCAT master library dependencies. The error was "Error while loading shared libraries: libethercat.so.1: Cannot open shared object file: No such file or directory" and was fixed after running ```sudo ldconfig``.
 
 
-
-
-
-
+## Install ROS 2 Jazzy Jalisco
+The installation of ROS 2 is not strictly related to the realtime kernel. It is possible to install ROS 2 from any kernel, and it will be available for all other kernels as well. It's suggested to navigate to the ``/`` folder (e.g. where the ``home``, ``dev``, ``etc`` etc. folders are located), right click on the window and select "open in terminal". Then follow the instructions [here](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html) to install ROS2 Jazzy Jalisco from deb packages. 
+## Use EtherCAT Master Libraries inside a ROS2 node
+Create a workspace containing a C++ package following the instructions in [this](https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html) and [this](https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html) tutorials. Then open the CMakeList.txt file inside the C++ package from your editor and add ``find_package(EtherCAT REQUIRED)`` in the ``find_package`` section and then, after the ``add_executable(<target_name> <target_src_path>)`` line (where  ``<target_name>`` and ``<target_src_path>`` are specific for you) add the line ``target_link_libraries(<target_name> EtherLab::ethercat)``; in case this line already exists just add `` EtherLab::ethercat`` before the ``)``. Save and then build the package again from terminal with ``colcon build``. After these operations it is possible to include the ``#include "ecrt.h"`` directive  inside the .cpp or .h files to include the IgH EtherCAT Master functionalities.
+If an error occurs because ROS 2 still cannot find the EtherCAT Master libraries, go back to the CMakeList.txt and add the line ``include_directories(/opt/etherlab/include)`` after the ``find_package`` section (this line could be added anyway even if there are no errors, it is just redundant). 
 
 
 
