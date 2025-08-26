@@ -16,6 +16,7 @@ Consider the following useful links:
 1. IgH EtherCAT Master v1.6.7 supported device drivers [here](https://docs.etherlab.org/ethercat/1.6/doxygen/devicedrivers.html). (Check if newer versions are available, such as 1.7.x.)
 2. Long-term supported Linux kernels: [here](https://www.kernel.org/).
 3. Expiration dates of long-term support: [here](https://www.kernel.org/category/releases.html).
+   
 As of today, 26 August 2025, IgH EtherCAT Master v1.6.7 supports all Ethernet drivers with kernels 6.1, 6.4, and 6.12 (obviously, if you know the EtherCAT driver on your computer, it's enough to choose a kernel in which it is supported). Then check the long-term supported kernels, in this case 6.1 (End of life Dec 2027), 6.6 (EOL Dec 2026) and 6.12 (EOL Dec 2026).
 Since the real time patch has been merged in the mainline since kernel 6.3, the only reasonable choice is kernel is 6.12 since it is long term supported, supports all Ethernet drivers and contains the real time patch. The kernel choice shouldn't affect ROS2 Jazzy as it simply requires Ubuntu 24.04.  
 
