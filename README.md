@@ -7,9 +7,20 @@ First, a Debian-based base operating system must be installed on the machine. Fo
 3. Install the operating system alongside Microsoft Windows (it is necessary because the majority of drive systems has to be set up in a Windows-based environment). During the installation select the Dual boot option and allocate a certain amount of the computer's memory considering that those xGB allocated will represent the storage capacity for the Liunx system and won't be availabe for Windows (since the allocated storage space defines the maximum storage capacity of the Linux system is recommended to allocate at least 100 GB but 150 GB or more would be better).  
 5. Make sure to leave twice the RAM space as swap area and to have only one additional partition as root (/).
 6. Download all the necessary updates during installation (better having wired ethernet connection).
-Once Ubuntu is up and running, a real-time kernel must be installed.
+There are two guides available here. The first was developed after an update to IgH EtherCAT Master that enabled the use of 6.x Linux kernels. The second was written earlier and uses 5.x Linux kernels. Follow the first guide unless unsolvable problems appear.
 
-## Install the Real-Time Kernel
+## Method 1
+Ubuntu 24.04.4 should automatically install with a 6.8 kernel. Unfortunately, another kernel is required to use IgH EtherCAT Master... but which one?
+These instructions were written in August 2025. If you are using this guide years later, please check if there are newer links and update this guide as necessary.
+Consider the following useful links:
+1. IgH EtherCAT Master v1.6.7 supported device drivers [here](https://docs.etherlab.org/ethercat/1.6/doxygen/devicedrivers.html). (Check if newer versions are available, such as 1.7.x.)
+2. Long-term supported Linux kernels: [here](https://www.kernel.org/).
+3. Expiration dates of long-term support: [here](https://www.kernel.org/category/releases.html).
+As of today, 26 August 2025, IgH EtherCAT Master v1.6.7 supports all Ethernet drivers with kernels 6.1, 6.4, and 6.12 (obviously, if you know the EtherCAT driver on your computer, it's enough to choose a kernel in which it is supported). Then check the long-term supported kernels, in this case 6.1 (End of life Dec 2027), 6.6 (EOL Dec 2026) and 6.12 (EOL Dec 2026).
+Since the real time patch has been merged in the mainline since kernel 6.3, the only reasonable choice is kernel is 6.12 since it is long term supported, supports all Ethernet drivers and contains the real time patch. The kernel choice shouldn't affect ROS2 Jazzy as it simply requires Ubuntu 24.04.  
+
+
+## Method 2: Install older the Real-Time Kernel
 1. Boot the system to the default Linux kernel.
 2. Download linux-5.15.170.tar.xz from [here](https://www.kernel.org/pub/linux/kernel/v5.x/).
 3. Download patch-5.15.170-rt81.patch.xz from [here](https://cdn.kernel.org/pub/linux/kernel/projects/rt/5.15/older/).
